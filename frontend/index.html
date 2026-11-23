@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CogniNER - AI Cognitive Companion for Elderly Dementia Care</title>
+  <!-- Google Fonts: Lexend for high readability -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js for Caregiver Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="lang-en theme-warm">
+  <!-- Top Accessibility Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="logo-icon">🧠</div>
+        <div>
+          <h1 class="brand-title">CogniNER <span class="badge-sih">SIH #26003</span></h1>
+          <p class="brand-sub" id="hdr-tagline">AI Cognitive Companion for North East Region Elders</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <!-- Connectivity Status Badge -->
+        <div id="sync-status" class="status-badge online" title="Status of local SQLite and Cloud Sync">
+          <span class="status-dot"></span>
+          <span id="sync-text">Online • Synced</span>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="lang-selector-group">
+          <label for="lang-select" class="sr-only">Choose Language</label>
+          <select id="lang-select" class="lang-dropdown" aria-label="Select Language">
+            <option value="en">English (English)</option>
+            <option value="as">অসমীয়া (Assamese)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+          </select>
+        </div>
+
+        <!-- Demo Persona Switcher -->
+        <div class="user-selector-group">
+          <label for="demo-user-select" class="sr-only">Demo Persona</label>
+          <select id="demo-user-select" class="lang-dropdown user-dropdown" aria-label="Demo Persona" onchange="handleUserSwitch(this.value)">
+            <option value="patient_1">👴 Bhaben Sarma (Patient)</option>
+            <option value="caregiver_1">👨‍💼 Pranab Sarma (Caregiver)</option>
+            <option value="doctor_1">🩺 Dr. H. Barua (Doctor)</option>
+            <option value="patient_2">👵 Minati Devi (Patient)</option>
+          </select>
+        </div>
+
+        <!-- Voice Assistant Assistant Button -->
+        <button id="voice-assistant-btn" class="btn-voice-toggle" title="Click to speak a command" aria-label="Voice Command">
+          <span class="mic-icon">🎙️</span>
+          <span id="voice-btn-label">Voice Help</span>
+        </button>
+
+        <!-- View Navigation Tabs -->
+        <nav class="view-nav">
+          <button id="tab-patient" class="nav-tab active" onclick="switchView('patient')">
+            👴 <span id="nav-lbl-patient">Elderly App</span>
+          </button>
+          <button id="tab-caregiver" class="nav-tab" onclick="switchView('caregiver')">
+            📊 <span id="nav-lbl-caregiver">Caregiver Portal</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="main-content">
+
+    <!-- ====================================================
+         VIEW 1: ELDERLY PATIENT MODE
+         High contrast, large fonts, tactile cards, audio cues
+         ==================================================== -->
+    <section id="patient-view" class="view-section active">
+      
+      <!-- Patient Welcome & Cognitive Level Bar -->
+      <div class="patient-greeting-card">
+        <div class="greeting-left">
+          <div class="avatar-circle">👴</div>
+          <div>
+            <h2 id="patient-welcome-title" class="greeting-heading">Namaste, Bhaben Dadu!</h2>
+            <p id="patient-welcome-sub" class="greeting-sub">Let's do today's fun brain activities from Assam and North East.</p>
+          </div>
+        </div>
+        <div class="greeting-right">
+          <div class="adaptive-pill">
+            <span class="pill-label" id="lbl-ai-level">AI Dynamic Tier:</span>
+            <span id="patient-tier-badge" class="tier-badge medium">Medium</span>
+          </div>
+          <button id="tts-speak-greeting" class="btn-audio-listen" title="Hear this aloud">
+            🔊 <span id="lbl-listen-prompt">Listen</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Urgent Daily Schedule / Medication Reminder Banner -->
+      <div class="reminder-banner-card" id="active-reminder-box">
+        <div class="reminder-badge">
+          <span class="bell-ring">⏰</span>
+          <span id="lbl-next-routine">Next Daily Routine:</span>
+        </div>
+        <div class="reminder-info">
+          <h3 id="reminder-title">Morning BP Medicine (Amlodipine 5mg)</h3>
+          <p id="reminder-time-dose">Time: <strong>08:00 AM</strong> • 1 tablet with warm water</p>
+        </div>
+        <div class="reminder-action">
+          <button id="btn-confirm-routine" class="btn-check-done">
+            ✅ <span id="lbl-routine-done">I Took It</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Game Hub Title -->
+      <div class="section-title-wrap">
+        <h3 id="hdr-games-title" class="section-heading">Daily Cognitive Exercises</h3>
+        <p id="hdr-games-sub" class="section-sub">Choose any activity below. Take your time, there is no hurry!</p>
+      </div>
+
+      <!-- Cognitive Games Grid -->
+      <div class="games-grid">
+        
+        <!-- Game 1: NER Cultural Memory Match -->
+        <article class="game-card cultural-match" onclick="startCulturalGame()">
+          <div class="game-card-icon">🦏</div>
+          <div class="game-card-body">
+            <span class="game-tag ner-tag" id="tag-game1">NER Cultural Recall</span>
+            <h4 class="game-title" id="title-game1">Assam Heritage Match</h4>
+            <p class="game-desc" id="desc-game1">Find matching pairs of familiar icons: Kaziranga Rhino, Bihu Dhol, Tea Leaves & Jaapi.</p>
+            <div class="game-meta">
+              <span>🎯 Focus: Visual Memory</span>
+              <span class="play-action-text" id="btn-play-game1">Play Now ➔</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Game 2: Daily Routine Sequencer -->
+        <article class="game-card routine-sequencer" onclick="startRoutineGame()">
+          <div class="game-card-icon">☀️</div>
+          <div class="game-card-body">
+            <span class="game-tag routine-tag" id="tag-game2">Routine & Orientation</span>
+            <h4 class="game-title" id="title-game2">Daily Routine Timeline</h4>
+            <p class="game-desc" id="desc-game2">Arrange morning tea, medicine, garden walk, and dinner in the right order.</p>
+            <div class="game-meta">
+              <span>🗓️ Focus: Time Sequence</span>
+              <span class="play-action-text" id="btn-play-game2">Play Now ➔</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Game 3: Faces & Places Digital Twin -->
+        <article class="game-card face-recall" onclick="startFaceRecallGame()">
+          <div class="game-card-icon">🏡</div>
+          <div class="game-card-body">
+            <span class="game-tag memory-tag" id="tag-game3">"Memory of Me"</span>
+            <h4 class="game-title" id="title-game3">Family & Hometown Recall</h4>
+            <p class="game-desc" id="desc-game3">Recall dear family members (Ananya, Pranab) and beloved spots like Majuli & Guwahati.</p>
+            <div class="game-meta">
+              <span>❤️ Focus: Personal Identity</span>
+              <span class="play-action-text" id="btn-play-game3">Play Now ➔</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Game 4: Speed of Attention Focus Drill -->
+        <article class="game-card attention-drill" onclick="startAttentionGame()">
+          <div class="game-card-icon">🥁</div>
+          <div class="game-card-body">
+            <span class="game-tag attention-tag" id="tag-game4">Speed of Processing</span>
+            <h4 class="game-title" id="title-game4">Bihu Dhol Tap Challenge</h4>
+            <p class="game-desc" id="desc-game4">Tap the musical instrument when it lights up. Keeps your reflexes sharp and active.</p>
+            <div class="game-meta">
+              <span>⚡ Focus: Reaction Speed</span>
+              <span class="play-action-text" id="btn-play-game4">Play Now ➔</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <!-- Live Interactive Game Arena (Populated dynamically when game begins) -->
+      <div id="game-arena-container" class="game-arena-modal hidden">
+        <div class="arena-card">
+          <div class="arena-header">
+            <div class="arena-title-wrap">
+              <span id="arena-icon" class="arena-icon">🎮</span>
+              <div>
+                <h3 id="arena-title">NER Cultural Memory Match</h3>
+                <p id="arena-instruction">Tap two cards to find matching North East symbols.</p>
+              </div>
+            </div>
+            <div class="arena-stats">
+              <div class="stat-bubble">
+                <span class="stat-label">Moves:</span>
+                <span id="arena-moves" class="stat-val">0</span>
+              </div>
+              <div class="stat-bubble">
+                <span class="stat-label">Timer:</span>
+                <span id="arena-timer" class="stat-val">0s</span>
+              </div>
+              <button class="btn-close-arena" onclick="closeGameArena()" title="Exit Game">✕</button>
+            </div>
+          </div>
+
+          <!-- Game Dynamic Canvas / Boards -->
+          <div id="arena-board" class="arena-board">
+            <!-- Injected via JavaScript -->
+          </div>
+
+          <!-- Arena Footer with Voice Hint -->
+          <div class="arena-footer">
+            <button id="arena-voice-hint" class="btn-voice-hint">
+              🔊 <span id="lbl-voice-hint">Read Instructions Aloud</span>
+            </button>
+            <button class="btn-secondary" onclick="closeGameArena()">
+              <span id="lbl-exit-game">Finish & Return</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Game Completion Celebration Modal -->
+      <div id="game-result-modal" class="game-result-modal hidden">
+        <div class="result-card">
+          <div class="celebrate-emoji">🎉</div>
+          <h3 id="result-title">Shabash, Dadu! Outstanding Work!</h3>
+          <p id="result-sub">You completed this session with great focus and memory accuracy.</p>
+          
+          <div class="result-metrics-grid">
+            <div class="metric-box">
+              <span class="metric-num" id="res-score">88</span>
+              <span class="metric-lbl">Cognitive Score</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-num" id="res-acc">92%</span>
+              <span class="metric-lbl">Accuracy</span>
+            </div>
+            <div class="metric-box">
+              <span class="metric-num" id="res-rt">2.1s</span>
+              <span class="metric-lbl">Reaction Time</span>
+            </div>
+          </div>
+
+          <div class="result-ai-note" id="res-ai-note">
+            🤖 <strong>AI Adaptive Note:</strong> Performance is strong! Next time we will introduce an additional cultural pair.
+          </div>
+
+          <button class="btn-primary-large" onclick="closeResultModal()">
+            🌟 <span id="lbl-back-hub">Continue to Home</span>
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ====================================================
+         VIEW 2: CAREGIVER & CLINICAL DASHBOARD
+         Telemetry, trend analytics, alert logs, digital twin
+         ==================================================== -->
+    <section id="caregiver-view" class="view-section">
+      
+      <!-- Patient Summary Header -->
+      <div class="caregiver-header-card">
+        <div class="cg-profile-info">
+          <h2>Caregiver Telemetry & Clinical Dashboard</h2>
+          <p>Monitoring: <strong>Bhaben Sarma (73 yrs)</strong> • Primary Caregiver: <strong>Pranab Sarma (Son)</strong></p>
+          <div class="cg-tags">
+            <span class="cg-tag">Location: Jorhat / Guwahati, Assam</span>
+            <span class="cg-tag">Stage: Mild Cognitive Impairment</span>
+            <span class="cg-tag" id="cg-current-difficulty">Active Difficulty: Medium (AI Auto-Adapt)</span>
+          </div>
+        </div>
+        <div class="cg-actions">
+          <button class="btn-outline" onclick="window.print()">
+            🖨️ Print Clinical Summary
+          </button>
+          <button class="btn-primary" onclick="openMemoryModal()">
+            ➕ Add Family Memory
+          </button>
+        </div>
+      </div>
+
+      <!-- Real-Time Metrics Row -->
+      <div class="metrics-row">
+        
+        <div class="metric-kpi-card">
+          <div class="kpi-icon blue">🧠</div>
+          <div class="kpi-body">
+            <span class="kpi-title">Composite Cognitive Score</span>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value" id="kpi-composite">84.2</span>
+              <span class="kpi-unit">/100</span>
+            </div>
+            <span class="kpi-trend positive" id="kpi-trend-text">▲ +6.4% this week</span>
+          </div>
+        </div>
+
+        <div class="metric-kpi-card">
+          <div class="kpi-icon green">🎯</div>
+          <div class="kpi-body">
+            <span class="kpi-title">Memory Accuracy</span>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value" id="kpi-accuracy">86.5%</span>
+            </div>
+            <span class="kpi-sub">NER Cultural recall</span>
+          </div>
+        </div>
+
+        <div class="metric-kpi-card">
+          <div class="kpi-icon orange">⚡</div>
+          <div class="kpi-body">
+            <span class="kpi-title">Average Reaction Speed</span>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value" id="kpi-reaction-time">2.4</span>
+              <span class="kpi-unit">sec</span>
+            </div>
+            <span class="kpi-sub">Age-normalized</span>
+          </div>
+        </div>
+
+        <div class="metric-kpi-card">
+          <div class="kpi-icon purple">💊</div>
+          <div class="kpi-body">
+            <span class="kpi-title">Routine & Med Adherence</span>
+            <div class="kpi-value-wrap">
+              <span class="kpi-value" id="kpi-adherence">91.7%</span>
+            </div>
+            <span class="kpi-sub" id="kpi-adherence-ratio">11 of 12 logged</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Visual Analytics & Charts -->
+      <div class="dashboard-grid">
+        
+        <!-- Cognitive Score Progression Chart -->
+        <div class="chart-card">
+          <div class="chart-card-hdr">
+            <div>
+              <h3 class="chart-title">7-Day Cognitive Performance Trend</h3>
+              <p class="chart-sub">Daily composite score tracking accuracy, processing speed, and consistency</p>
+            </div>
+            <div class="chart-legend-badge">AI Monitored</div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="cognitiveTrendChart"></canvas>
+          </div>
+        </div>
+
+        <!-- AI Clinical Alerts & Notifications -->
+        <div class="alerts-card">
+          <div class="chart-card-hdr">
+            <div>
+              <h3 class="chart-title">Clinical & Routine Alerts</h3>
+              <p class="chart-sub">Real-time alerts for missed meds and cognitive shifts</p>
+            </div>
+          </div>
+          <div class="alerts-list" id="alerts-container">
+            <!-- Populated via API -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Management Rows: Daily Routine Adherence + "Memory of Me" Manager -->
+      <div class="management-grid">
+        
+        <!-- Daily Routine & Medication Table -->
+        <div class="mgmt-card">
+          <div class="chart-card-hdr">
+            <h3 class="chart-title">Today's Routine & Medicine Log</h3>
+            <span class="badge-pill">Daily Adherence</span>
+          </div>
+          <div class="table-responsive">
+            <table class="routine-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Activity / Medication</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="caregiver-routine-tbody">
+                <!-- Injected via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- "Memory of Me" Digital Twin Cards -->
+        <div class="mgmt-card">
+          <div class="chart-card-hdr">
+            <div>
+              <h3 class="chart-title">"Memory of Me" Digital Twin</h3>
+              <p class="chart-sub">Familiar faces, hometowns, and cultural stories used in patient drills</p>
+            </div>
+          </div>
+          <div class="memory-cards-list" id="memory-cards-container">
+            <!-- Injected via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Caregiver Difficulty Control Card -->
+      <div class="difficulty-control-card">
+        <div class="diff-left">
+          <h3>🎮 Adaptive Difficulty & AI Configuration</h3>
+          <p>The AI dynamically updates game speed and pair count. You can also manually set the level here.</p>
+        </div>
+        <div class="diff-right">
+          <div class="toggle-group">
+            <label class="switch">
+              <input type="checkbox" id="chk-auto-adapt" checked onchange="toggleAutoAdapt()">
+              <span class="slider round"></span>
+            </label>
+            <span id="lbl-auto-adapt-status">Auto-Adaptation: <strong>ON</strong></span>
+          </div>
+          <div class="btn-tier-group">
+            <button class="btn-tier" id="btn-tier-easy" onclick="setManualDifficulty('Easy')">🟢 Easy</button>
+            <button class="btn-tier active" id="btn-tier-medium" onclick="setManualDifficulty('Medium')">🟡 Medium</button>
+            <button class="btn-tier" id="btn-tier-hard" onclick="setManualDifficulty('Hard')">🔴 Hard</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Add Memory Modal -->
+  <div id="add-memory-modal" class="game-arena-modal hidden">
+    <div class="arena-card memory-form-card">
+      <div class="arena-header">
+        <h3>Add New "Memory of Me" Card</h3>
+        <button class="btn-close-arena" onclick="closeMemoryModal()">✕</button>
+      </div>
+      <form id="form-add-memory" onsubmit="handleMemorySubmit(event)">
+        <div class="form-group">
+          <label>Name / Person or Place:</label>
+          <input type="text" id="mem-name" placeholder="e.g., Grandson Rohan / Brahmaputra Ghat" required />
+        </div>
+        <div class="form-group">
+          <label>Relationship / Category:</label>
+          <input type="text" id="mem-relation" placeholder="e.g., Grandson / Ancestral Home / Hometown" required />
+        </div>
+        <div class="form-group">
+          <label>Hometown / Town in NER:</label>
+          <input type="text" id="mem-town" placeholder="e.g., Shillong, Jorhat, Dibrugarh" />
+        </div>
+        <div class="form-group">
+          <label>Memory Story Prompt (Read to Elder):</label>
+          <textarea id="mem-story" rows="3" placeholder="e.g., Rohan is your 12-year-old grandson who visits during Magh Bihu..." required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Memory Clues / Hints (comma separated):</label>
+          <input type="text" id="mem-hints" placeholder="Plays football, loves Assam tea, calls on weekends" />
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeMemoryModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save Memory Card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Audio Chime Synth Element -->
+  <audio id="audio-feedback" preload="none"></audio>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>
